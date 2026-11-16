@@ -1,0 +1,7 @@
+.vscode
+.venv
+
+datasets/env
+datasets/vict
+
+*.pdf
