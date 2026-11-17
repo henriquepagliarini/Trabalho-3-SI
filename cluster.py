@@ -1,4 +1,5 @@
 from sklearn.preprocessing import StandardScaler
+import os
 
 class Cluster():
     def __init__(self, vitimas, features):
@@ -10,7 +11,6 @@ class Cluster():
         
     def normalizar_dados(self):
         dados = self.vitimas[self.features]
-        
         scaler = StandardScaler()
         self.X = scaler.fit_transform(dados)
         
@@ -23,17 +23,13 @@ class Cluster():
         
         resultado = self.vitimas.copy()
         resultado['cluster'] = self.clusters
-        
         return resultado
-    
+
     def salvar_clusters(self, dir='.'):
         if self.clusters is None:
             raise RuntimeError("Execute a clusterização antes de salvar.")
-        
-        import os
-        
+
         os.makedirs(dir, exist_ok=True)
-        
         resultado = self.obter_resultados()
         
         for cluster_id in sorted(set(self.clusters)):
