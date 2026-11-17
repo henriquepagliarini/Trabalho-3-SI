@@ -145,9 +145,9 @@ def main():
     
     dataset.df['sobr'] = dataset.df['sobr'].astype('float64')
     dataset.df.update(vitimas[['tri', 'sobr']])
-    dataset.df.to_csv('./resultados/map_tri_sobr.csv', index=False)
     
     os.makedirs('resultados', exist_ok=True)
+    dataset.df.to_csv('./resultados/map_tri_sobr.csv', index=False)
     
     plotar_nuvem_pontos(vitimas)
     executar_kmeans_basico(vitimas)
