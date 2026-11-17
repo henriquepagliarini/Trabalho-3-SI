@@ -1,8 +1,10 @@
 .vscode
 .venv
+venv
 __pycache__
 
 datasets/env
 datasets/vict
 datasets/vitimas_classificadas.csv
+resultados
 *.pdf
