@@ -143,6 +143,10 @@ def main():
     models = MLModels("models")
     vitimas = models.calcular(dataset.vitimas, data_vict)
     
+    dataset.df['sobr'] = dataset.df['sobr'].astype('float64')
+    dataset.df.update(vitimas[['tri', 'sobr']])
+    dataset.df.to_csv('./resultados/map_tri_sobr.csv', index=False)
+    
     os.makedirs('resultados', exist_ok=True)
     
     plotar_nuvem_pontos(vitimas)

@@ -33,9 +33,9 @@ import numpy as np
 # =========================
 path_config = "./datasets/env/75x75_410v"
 path_vict   = "./datasets/vict/410v"
-path_maps   = "./datasets"
+path_maps   = "./resultados/"
 path_clusters = "./resultados/"
-map_file = "vitimas_classificadas.csv"
+map_file = "map_tri_sobr.csv"
 
 PLOTAR_SEQUENCIAMENTO = False
 
