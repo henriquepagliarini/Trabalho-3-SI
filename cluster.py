@@ -35,7 +35,7 @@ class Cluster():
         for cluster_id in sorted(set(self.clusters)):
             vitimas_cluster = resultado[resultado['cluster'] == cluster_id]
             
-            file_name = f"cluster_{self.__class__.__name__}_{cluster_id}.txt"
+            file_name = f"cluster_{cluster_id}.txt"
             path = os.path.join(dir, file_name)
             
             with open(path, 'w', encoding='utf-8') as arquivo:
