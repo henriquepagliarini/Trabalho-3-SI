@@ -68,6 +68,73 @@ def executar_kmeans_basico(vitimas):
     plt.tight_layout()
     plt.savefig('resultados/grafico_k_por_silhueta.png', dpi=300)
     plt.close()
+
+def executar_dbscan(vitimas):
+    print("\nDBScan - 3 parametrizações diferentes")
+    print(
+        f"{'Par':<4} | {'eps':<6} | {'min_samp':<8} | {'Clusters':<8} |"
+        f" {'Ruídos':<8} | {'Cobertura':<10} | {'Silh. Global':<12} | {'Score'}"
+        f" {'Final':<10}"
+    )
+    print('-' * 88)
+    
+    parametros = [
+        {'eps': 0.2, 'min_samples': 3},
+        {'eps': 0.7, 'min_samples': 7},
+        {'eps': 1.0, 'min_samples': 10},
+    ]
+    
+    melhor_score = -1
+    melhor_db = None
+    
+    for i, params in enumerate(parametros, start=1):
+        dbscan = DBScanCluster(vitimas, ['tri', 'pr'], eps=params['eps'], min_samples=params['min_samples'])
+        dbscan.executar()
+        
+        print(
+            f'{i:<4} | {params["eps"]:<6} | {params["min_samples"]:<8} |'
+            f' {dbscan.n_clusters:<8} | {dbscan.n_ruidos:<8} | {dbscan.cobertura:<10.4f} |'
+            f' {dbscan.silhueta_global:<12.4f} | {dbscan.score_final:<10.4f}'
+        )
+        
+        plt.figure(figsize=(7, 5))
+        resultado = dbscan.obter_resultados()
+
+        plt.scatter(
+            resultado[resultado['cluster'] != -1]['tri'],
+            resultado[resultado['cluster'] != -1]['pr'],
+            c=resultado[resultado['cluster'] != -1]['cluster'],
+            cmap='viridis',
+            s=50,
+            edgecolors='k',
+        )
+        plt.scatter(
+            resultado[resultado['cluster'] == -1]['tri'],
+            resultado[resultado['cluster'] == -1]['pr'],
+            c='red',
+            marker='x',
+            s=40,
+            label='Ruído (-1)',
+        )
+
+        plt.title(
+            f'DBScan - Parâmetro {i} (eps={params["eps"]},'
+            f' min_samples={params["min_samples"]})'
+        )
+        plt.xlabel('Triagem (tri)')
+        plt.ylabel('Pulso (pr)')
+        plt.legend()
+        plt.grid(True, linestyle='--', alpha=0.5)
+        plt.tight_layout()
+        plt.savefig(f'resultados/dbscan_par_{i}.png', dpi=300)
+        plt.close()
+        
+        if dbscan.score_final > melhor_score:
+            melhor_score = dbscan.score_final
+            melhor_db = dbscan
+    
+    if melhor_db:
+        melhor_db.salvar_clusters('resultados')
         
 def main():
     dataset = DataSet('./datasets/map.csv')
@@ -80,6 +147,7 @@ def main():
     
     plotar_nuvem_pontos(vitimas)
     executar_kmeans_basico(vitimas)
+    executar_dbscan(vitimas)
     
 if __name__ == '__main__':
     main()
