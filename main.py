@@ -7,21 +7,24 @@ import matplotlib.pyplot as plt
 import os
 
 def plotar_nuvem_pontos(vitimas):
-    plt.figure(figsize=(7, 5))
-    plt.scatter(
-        vitimas['tri'],
-        vitimas['pr'],
-        c='royalblue',
-        alpha=0.7,
-        edgecolors='k',
-        s=40,
+    fig = plt.figure(figsize=(8, 6))
+    ax = fig.add_subplot(111, projection="3d")
+
+    ax.scatter(
+        vitimas["x_rel"],
+        vitimas["y_rel"],
+        vitimas["sobr"],
+        s=45,
+        edgecolors="k",
+        alpha=0.8,
     )
-    plt.title('Nuvem de Pontos: Características (Triagem vs. Pulso)')
-    plt.xlabel('Triagem (tri)')
-    plt.ylabel('Pulso (pr)')
-    plt.grid(True, linestyle='--', alpha=0.5)
+
+    ax.set_title(f"Nuvem de Pontos K-Means 3D (K=7)\nFeatures: [x_rel, y_rel, sobr]")
+    ax.set_xlabel("x_rel (X)")
+    ax.set_ylabel("y_rel (Y)")
+    ax.set_zlabel("sobr (Prob. Sobrevivência)")
     plt.tight_layout()
-    plt.savefig('resultados/nuvem_pontos_tri_pr.png', dpi=300)
+    plt.savefig("resultados/kmeans_nuvem_pontos_3d_sobr.png", dpi=300)
     plt.close()
     
 def executar_kmeans_basico(vitimas):
@@ -69,6 +72,22 @@ def executar_kmeans_basico(vitimas):
     plt.savefig('resultados/grafico_k_por_silhueta.png', dpi=300)
     plt.close()
 
+def executar_kmeans_sobr_espacial(vitimas):
+    print("\n" + "=" * 70)
+    print("EXECUTANDO K-MEANS: ESPACIAL + SOBREVIVÊNCIA (x_rel, y_rel, sobr)")
+    print("=" * 70)
+
+    features = ["x_rel", "y_rel", "sobr"]
+    k = 7
+    
+    kmeans = KMeansCluster(vitimas, features, k)
+    kmeans.executar()
+
+    print(f"K = {k:<2} | SSE = {kmeans.sse:<10.4f} | Silhueta = {kmeans.silhueta:<8.4f}")
+
+    os.makedirs("resultados", exist_ok=True)
+    kmeans.salvar_clusters("resultados")
+
 def executar_dbscan(vitimas):
     print("\nDBScan - 3 parametrizações diferentes")
     print(
@@ -80,15 +99,12 @@ def executar_dbscan(vitimas):
     
     parametros = [
         {'eps': 0.2, 'min_samples': 3},
-        {'eps': 0.7, 'min_samples': 7},
+        {'eps': 0.3, 'min_samples': 5},
         {'eps': 1.0, 'min_samples': 10},
     ]
     
-    melhor_score = -1
-    melhor_db = None
-    
     for i, params in enumerate(parametros, start=1):
-        dbscan = DBScanCluster(vitimas, ['tri', 'pr'], eps=params['eps'], min_samples=params['min_samples'])
+        dbscan = DBScanCluster(vitimas, ['x_rel', 'y_rel', 'sobr'], eps=params['eps'], min_samples=params['min_samples'])
         dbscan.executar()
         
         print(
@@ -96,45 +112,6 @@ def executar_dbscan(vitimas):
             f' {dbscan.n_clusters:<8} | {dbscan.n_ruidos:<8} | {dbscan.cobertura:<10.4f} |'
             f' {dbscan.silhueta_global:<12.4f} | {dbscan.score_final:<10.4f}'
         )
-        
-        plt.figure(figsize=(7, 5))
-        resultado = dbscan.obter_resultados()
-
-        plt.scatter(
-            resultado[resultado['cluster'] != -1]['tri'],
-            resultado[resultado['cluster'] != -1]['pr'],
-            c=resultado[resultado['cluster'] != -1]['cluster'],
-            cmap='viridis',
-            s=50,
-            edgecolors='k',
-        )
-        plt.scatter(
-            resultado[resultado['cluster'] == -1]['tri'],
-            resultado[resultado['cluster'] == -1]['pr'],
-            c='red',
-            marker='x',
-            s=40,
-            label='Ruído (-1)',
-        )
-
-        plt.title(
-            f'DBScan - Parâmetro {i} (eps={params["eps"]},'
-            f' min_samples={params["min_samples"]})'
-        )
-        plt.xlabel('Triagem (tri)')
-        plt.ylabel('Pulso (pr)')
-        plt.legend()
-        plt.grid(True, linestyle='--', alpha=0.5)
-        plt.tight_layout()
-        plt.savefig(f'resultados/dbscan_par_{i}.png', dpi=300)
-        plt.close()
-        
-        if dbscan.score_final > melhor_score:
-            melhor_score = dbscan.score_final
-            melhor_db = dbscan
-    
-    if melhor_db:
-        melhor_db.salvar_clusters('resultados')
         
 def main():
     dataset = DataSet('./datasets/map.csv')
@@ -152,6 +129,7 @@ def main():
     plotar_nuvem_pontos(vitimas)
     executar_kmeans_basico(vitimas)
     executar_dbscan(vitimas)
+    executar_kmeans_sobr_espacial(vitimas)
     
 if __name__ == '__main__':
     main()

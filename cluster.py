@@ -32,7 +32,7 @@ class Cluster():
         os.makedirs(dir, exist_ok=True)
         resultado = self.obter_resultados()
         
-        for cluster_id in sorted(set(self.clusters)):
+        for cluster_id in sorted(set(self.clusters) - {-1}):
             vitimas_cluster = resultado[resultado['cluster'] == cluster_id]
             
             file_name = f"cluster_{cluster_id}.txt"
